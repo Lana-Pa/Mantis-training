@@ -47,8 +47,8 @@ class ProjectHelper:
             self.open_projects()
             self.project_cache = []
             for element in wd.find_elements_by_xpath("//tr[@class='row-1']"):
-                name = element.find_element_by_xpath(".//td[1]").text
-                description = element.find_element_by_xpath(".//td[5]").text
+                name = element.find_element_by_xpath("//td[1]").text
+                description = element.find_element_by_xpath("//td[5]").text
 
                 self.project_cache.append(Project(name=name, description=description))
         return list(self.project_cache)
