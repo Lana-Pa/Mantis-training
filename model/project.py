@@ -7,10 +7,10 @@ class Project:
 
 
     def __repr__(self):
-        return "TestProject:%s;%s" % (self.name, self.description)
+        return "PROJECT:%s;%s" % (self.name, self.description)
 
     def __eq__(self, other):
-        return (self.id is None or other.id is None or self.id == other.id) and self.name == other.name
+        return self.name == other.name
 
     def max(self):
        return maxsize
