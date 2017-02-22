@@ -10,13 +10,9 @@ class ProjectHelper:
 
     def open_projects(self):
         wd = self.app.wd
-        # if not (wd.current_url.endswith("/mantisbt-1.2.19/") and len(wd.find_elements_by_link_text("My View"))>0):
-        #     wd.find_element_by_xpath("//a[@href=contains(text(),'My View')]").click()
-        wd.find_element_by_link_text("Manage").click()
-        wd.find_element_by_link_text("Manage Projects").click()
-        element = WebDriverWait(wd, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "td.menu")))
-
+        if not (wd.current_url.endswith("/manage_proj_page.php") and len(wd.find_elements_by_xpath("//input[@value='Create New Project']")) > 0):
+            wd.find_element_by_link_text("Manage").click()
+            wd.find_element_by_link_text("Manage Projects").click()
 
     def change_field_value(self, field_name, text):
         wd = self.app.wd
@@ -33,42 +29,46 @@ class ProjectHelper:
     def create(self, project):
         wd = self.app.wd
         self.open_projects()
-
         wd.find_element_by_xpath("//input[@value='Create New Project']").click()
         self.fill_project_form(project)
         wd.find_element_by_xpath("//input[@value='Add Project']").click()
         element = WebDriverWait(wd, 3).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "td.menu")))
+        self.project_cache = None
 
-    def delete_project(self):
+    def select_project_by_index(self, index):
+        wd = self.app.wd
+        wd.find_elements_by_xpath("//table[@class='width100']//tr[@class='row-1' or @class='row-2']//td/a")[index].click()
+
+
+    def delete_project(self, index):
         wd = self.app.wd
         self.open_projects()
-        wd.find_elements_by_xpath("//tr[@class='row-1' or @class='row-2']/td/a").click
-        time.sleep(2)
-        wd.find_element_by_xpath("//div//input[@value='Delete Project']").click
-        wd.find_element_by_xpath("//div//input[@value='Delete Project']").click
-        element = WebDriverWait(wd, 3).until(
+        self.select_project_by_index(index)
+        wd.find_element_by_xpath("//div[@class='border center']//input[@value='Delete Project']").click()
+        wd.find_element_by_xpath("//div[@align='center']//input[@value='Delete Project']").click()
+        element = WebDriverWait(wd, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "td.menu")))
+        self.project_cache = None
 
+    project_cache = None
 
     def get_project_list(self):
+        if self.project_cache is None:
+            wd = self.app.wd
+            self.open_projects()
+            self.project_cache = []
+
+            rows = wd.find_elements_by_xpath("//table[@class='width100']//tr[@class='row-1' or @class='row-2']")
+            for element in rows:
+                name = element.find_element_by_xpath(".//td[1]/a").text
+                description = element.find_element_by_xpath(".//td[5]").text
+                self.project_cache.append(Project(name=name, description=description))
+            return list(self.project_cache)
+
+
+    def count(self):
         wd = self.app.wd
         self.open_projects()
-        projects = []
-
-        rows1 = wd.find_elements_by_css_selector('tr.row-1')
-        for element in rows1:
-            name = element.find_element_by_xpath(".//td[1]/a").text
-            description = element.find_element_by_xpath(".//td[5]").text
-            projects.append(Project(name=name, description=description))
-        print(projects)
-
-        rows2 = wd.find_elements_by_css_selector('tr.row-2')
-        for element in rows2:
-            name = element.find_element_by_xpath(".//td[1]/a").text
-            description = element.find_element_by_xpath(".//td[5]").text
-            projects.append(Project(name=name, description=description))
-        print(projects)
-
-        return projects
+        return len(wd.find_elements_by_xpath("//table[@class='width100']//tr[@class='row-1' or @class='row-2']//td/a"))
 
