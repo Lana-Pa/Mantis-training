@@ -2,6 +2,7 @@ from random import randrange
 from model.project import Project
 
 def test_delete_project(app):
+    app.session.login("administrator", "root")
     if app.project.count() == 0:
         app.project.create(Project(name="test", descriprion="test"))
 
